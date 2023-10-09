@@ -98,13 +98,10 @@ class MainActivity : AppCompatActivity() {
 
     private fun logout() {
         mGoogleSignInClient.signOut().addOnCompleteListener(OnCompleteListener<Void?> { task ->
-            // Check condition
+
             if (task.isSuccessful) {
-                // When task is successful sign out from firebase
                 firebaseAuth.signOut()
-                // Display Toast
-                Toast.makeText(applicationContext, "Logout successful", Toast.LENGTH_SHORT).show()
-                // Finish activity
+
             }
         })
     }
@@ -116,7 +113,7 @@ class MainActivity : AppCompatActivity() {
                 UpdateUI(account)
             }
         } catch (e: ApiException) {
-            Toast.makeText(this, e.toString(), Toast.LENGTH_SHORT).show()
+           // Toast.makeText(this, e.toString(), Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -124,10 +121,8 @@ class MainActivity : AppCompatActivity() {
         val credential = GoogleAuthProvider.getCredential(account.idToken, null)
         firebaseAuth.signInWithCredential(credential).addOnCompleteListener { task ->
             if (task.isSuccessful) {
-               // Toast.makeText(this, account.email, Toast.LENGTH_LONG).show()
-
-
                 checkEmail(account.email!!)
+                logout()
             }
         }
     }
@@ -146,7 +141,7 @@ class MainActivity : AppCompatActivity() {
                 }
 
                 override fun onCancelled(error: DatabaseError) {
-                    Toast.makeText(this@MainActivity, "Fail to get data.", Toast.LENGTH_SHORT)
+                    Toast.makeText(this@MainActivity, "Failed", Toast.LENGTH_SHORT)
                         .show()
                 }
             })
