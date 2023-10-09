@@ -1,21 +1,22 @@
 package com.example.gsignin
 
 import android.content.Intent
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.View
-import android.widget.Button
 import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.common.SignInButton
 import com.google.android.gms.common.api.ApiException
+import com.google.android.gms.tasks.OnCompleteListener
 import com.google.android.gms.tasks.Task
 import com.google.firebase.FirebaseApp
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.GoogleAuthProvider
+
 
 class MainActivity : AppCompatActivity() {
     lateinit var mGoogleSignInClient: GoogleSignInClient
@@ -38,6 +39,8 @@ class MainActivity : AppCompatActivity() {
         mGoogleSignInClient = GoogleSignIn.getClient(this, gso)
         firebaseAuth = FirebaseAuth.getInstance()
 
+        logout()
+
         Signin.setOnClickListener { view: View? ->
             Toast.makeText(this, "Logging In", Toast.LENGTH_SHORT).show()
             signInGoogle()
@@ -59,6 +62,19 @@ class MainActivity : AppCompatActivity() {
             val task: Task<GoogleSignInAccount> = GoogleSignIn.getSignedInAccountFromIntent(data)
             handleResult(task)
         }
+    }
+
+    private fun logout(){
+        mGoogleSignInClient.signOut().addOnCompleteListener(OnCompleteListener<Void?> { task ->
+            // Check condition
+            if (task.isSuccessful) {
+                // When task is successful sign out from firebase
+                firebaseAuth.signOut()
+                // Display Toast
+                Toast.makeText(applicationContext, "Logout successful", Toast.LENGTH_SHORT).show()
+                // Finish activity
+            }
+        })
     }
 
     private fun handleResult(completedTask: Task<GoogleSignInAccount>) {
