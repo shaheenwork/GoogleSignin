@@ -16,6 +16,7 @@ import com.google.android.gms.tasks.Task
 import com.google.firebase.FirebaseApp
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.GoogleAuthProvider
+import com.google.firebase.database.*
 
 
 class MainActivity : AppCompatActivity() {
@@ -23,13 +24,24 @@ class MainActivity : AppCompatActivity() {
     val Req_Code: Int = 123
     private lateinit var firebaseAuth: FirebaseAuth
 
+    var firebaseDatabase: FirebaseDatabase? = null
+
+    // creating a variable for our
+    // Database Reference for Firebase.
+    var databaseReference: DatabaseReference? = null
+
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
         FirebaseApp.initializeApp(this)
 
-        val Signin:SignInButton = findViewById(R.id.bt_sign_in);
+        firebaseDatabase = FirebaseDatabase.getInstance();
+        databaseReference = firebaseDatabase!!.getReference("emails");
+
+
+        val Signin: SignInButton = findViewById(R.id.bt_sign_in);
 
         val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
             .requestIdToken(getString(R.string.web_client_id))
@@ -64,7 +76,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun logout(){
+    private fun logout() {
         mGoogleSignInClient.signOut().addOnCompleteListener(OnCompleteListener<Void?> { task ->
             // Check condition
             if (task.isSuccessful) {
@@ -92,9 +104,32 @@ class MainActivity : AppCompatActivity() {
         val credential = GoogleAuthProvider.getCredential(account.idToken, null)
         firebaseAuth.signInWithCredential(credential).addOnCompleteListener { task ->
             if (task.isSuccessful) {
-                Toast.makeText(this,account.email,Toast.LENGTH_LONG).show()
+               // Toast.makeText(this, account.email, Toast.LENGTH_LONG).show()
+
+
+                checkEmail(account.email!!)
             }
         }
+    }
+
+
+    private fun checkEmail(email: String) {
+
+        databaseReference!!.child(email.replace(".","9999"))
+            .addListenerForSingleValueEvent(object : ValueEventListener {
+                override fun onDataChange(snapshot: DataSnapshot) {
+                    if (snapshot.exists()) {
+                        Toast.makeText(this@MainActivity, "true", Toast.LENGTH_LONG).show()
+                    } else {
+                        Toast.makeText(this@MainActivity, "false", Toast.LENGTH_LONG).show()
+                    }
+                }
+
+                override fun onCancelled(error: DatabaseError) {
+                    Toast.makeText(this@MainActivity, "Fail to get data.", Toast.LENGTH_SHORT)
+                        .show()
+                }
+            })
     }
 
 }
