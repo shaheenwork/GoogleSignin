@@ -1,6 +1,9 @@
 package com.example.gsignin
 
+import android.content.Context
 import android.content.Intent
+import android.net.ConnectivityManager
+import android.net.NetworkCapabilities
 import android.os.Bundle
 import android.view.View
 import android.widget.Toast
@@ -25,9 +28,6 @@ class MainActivity : AppCompatActivity() {
     private lateinit var firebaseAuth: FirebaseAuth
 
     var firebaseDatabase: FirebaseDatabase? = null
-
-    // creating a variable for our
-    // Database Reference for Firebase.
     var databaseReference: DatabaseReference? = null
 
 
@@ -54,10 +54,30 @@ class MainActivity : AppCompatActivity() {
         logout()
 
         Signin.setOnClickListener { view: View? ->
-            Toast.makeText(this, "Logging In", Toast.LENGTH_SHORT).show()
-            signInGoogle()
+
+            if (isInternetConnected(this@MainActivity)) {
+                signInGoogle()
+            }
+            else{
+                Toast.makeText(this@MainActivity,"Please check your internet connection and try again",Toast.LENGTH_LONG).show()
+            }
         }
 
+
+    }
+    private fun isInternetConnected(context: Context): Boolean {
+        val connectivityManager =
+            context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+
+        val nw = connectivityManager.activeNetwork ?: return false
+        val actNw = connectivityManager.getNetworkCapabilities(nw) ?: return false
+        return when {
+            actNw.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) -> true
+            actNw.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) -> true
+            actNw.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET) -> true
+            actNw.hasTransport(NetworkCapabilities.TRANSPORT_BLUETOOTH) -> true
+            else -> false
+        }
 
     }
 
